@@ -1,0 +1,8 @@
+This program can use LPT port to program the AVR by SPI protocol. I'm using a LPT-JTAG adapter.
+
+This code is used in my first AVR project. It's not finished as a generic programer. Some works still needed:
+
+- Add command-line options to read/write the fuses.
+- Sometimes it cannot "sync" to the device. There's no response when sending "Programing Enable" command.
+- Only support ATtiny2313 now.
+
