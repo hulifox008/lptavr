@@ -193,6 +193,22 @@ unsigned char avr_read(unsigned long addr)
     return in[3];
 }
 
+unsigned char avr_read_low_fuse()
+{
+    unsigned char out[] = {0x50, 0x00, 0x00, 0x00};
+    unsigned char in[4] = {0};
+    spi_transfer(out, in, 4);
+    return in[3];
+}
+
+void avr_write_low_fuse(unsigned char fuse)
+{
+    unsigned char out[] = {0xAC, 0xA0, 0x00, 0x00};
+    unsigned char in[4] = {0};
+    out[3] = fuse;
+    spi_transfer(out, in, 4);
+}
+
 int avr_program(const char* filename)
 {
     assert(NULL!=filename);
@@ -319,12 +335,20 @@ int main(int argc, char* argv[])
     if(avr_sync())
     {
         fprintf(stderr, "Cannot sync to the devices. Check connection.\n");
+        return -1;
     }
 
     printf("Device signature: %02X %02X %02X\n", avr_read_sig(0), avr_read_sig(1), avr_read_sig(2));
 
     avr_program(argv[1]);
     avr_verify(argv[1]);
+
+    /* I need very low clock in my current avr project. */
+    unsigned char fuse = avr_read_low_fuse();
+    printf("FUSE %02X\n", fuse);
+    fuse = fuse&0xF0|0x06;
+    printf("Programing low FUSE to %02X\n", fuse);
+    avr_write_low_fuse(fuse);
 
     /* release RST */
     RST_hi();
